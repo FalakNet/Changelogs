@@ -1,0 +1,76 @@
+---
+import FormattedDate from '../components/FormattedDate.astro';
+import Layout from '../layouts/IndexLayout.astro';
+import { getCollection, render, type DataEntryMap } from 'astro:content';
+
+export async function getStaticPaths() {
+	const fs = await import('fs/promises');
+	const path = await import('path');
+	const contentDir = path.resolve('./src/content');
+	const folders = (await fs.readdir(contentDir, { withFileTypes: true }))
+		.filter((dirent) => dirent.isDirectory() && !dirent.name.startsWith('_'))
+		.map((dirent) => dirent.name);
+
+	return folders.map((collection) => ({
+		params: { collection },
+		props: { collection },
+	}));
+}
+
+const { collection } = Astro.props;
+
+const posts = await getCollection(collection as keyof DataEntryMap);
+posts.sort((a, b) => +b.data.date - +a.data.date);
+
+// Pre-render content for each post
+const renderedPosts = await Promise.all(
+	posts.map(async (post) => {
+		const { Content } = await render(post);
+		return { post, Content };
+	})
+);
+
+const fs = await import('fs/promises');
+const path = await import('path');
+const contentDir = path.resolve('./src/content');
+const infoPath = path.join(contentDir, collection, 'info.md');
+
+let collectionTitle = collection.charAt(0).toUpperCase() + collection.slice(1);
+if (await fs.stat(infoPath).then(() => true, () => false)) {
+	const md = await fs.readFile(infoPath, 'utf8');
+	const match = md.match(/^---\s*([\s\S]*?)---/);
+	if (match) {
+		const yaml = match[1];
+		const titleMatch = yaml.match(/title:\s*['"]?(.+?)['"]?\s*$/m);
+		if (titleMatch) {
+			collectionTitle = titleMatch[1].trim();
+		}
+	}
+}
+---
+
+<Layout title={`${collectionTitle} Changelog`} description={`Latest updates and releases for ${collectionTitle}`}>
+	<main>
+		<h1 class="page_title">{collectionTitle} Changelog</h1>
+		<hr />
+		<ul class="posts" transition:name="post">
+			{
+				renderedPosts.map(({ post, Content }) => (
+					<li class="post">
+						<div class="version_wrapper">
+							<div class="version_info">
+								<a href={`/${collection}/${post.id}`}>
+									<div class="version_number">{post.data.versionNumber}</div>
+									<FormattedDate class="date" date={post.data.date} />
+								</a>
+							</div>
+						</div>
+						<div class="content">
+							<Content />
+						</div>
+					</li>
+				))
+			}
+		</ul>
+	</main>
+</Layout>

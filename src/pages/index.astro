@@ -1,6 +1,67 @@
 ---
 import Layout from "../layouts/IndexLayout.astro";
 import { SiteTitle } from "../consts";
+import fs from 'fs';
+import path from 'path';
+
+const contentDir = path.resolve('./src/content');
+const collections = fs
+  .readdirSync(contentDir, { withFileTypes: true })
+  .filter((dirent) => dirent.isDirectory() && !dirent.name.startsWith('_'))
+  .map((dirent) => dirent.name);
+
+// Define frontmatter interface
+interface Frontmatter {
+  title?: string;
+  description?: string;
+  [key: string]: string | undefined;
+}
+
+// Read info.md for each collection
+function parseFrontmatter(md: string): Frontmatter {
+  const match = md.match(/^---\s*([\s\S]*?)---/);
+  if (!match) return {};
+  const yaml = match[1];
+  const lines = yaml.split('\n');
+  const obj: Frontmatter = {};
+  for (const line of lines) {
+    const m = line.match(/^\s*([a-zA-Z0-9_]+):\s*['"]?([^'"]*)['"]?\s*$/);
+    if (m) obj[m[1]] = m[2];
+  }
+  return obj;
+}
+
+const collectionInfos = collections.map((col) => {
+  const infoPath = path.join(contentDir, col, 'info.md');
+  let info = { title: col, description: '' };
+  if (fs.existsSync(infoPath)) {
+    const md = fs.readFileSync(infoPath, 'utf8');
+    const fm = parseFrontmatter(md);
+    info = {
+      title: fm.title || col,
+      description: fm.description || '',
+    };
+  }
+
+  // Find latest post date in collection
+  const postsDir = path.join(contentDir, col);
+  let latestDate = 0;
+  if (fs.existsSync(postsDir)) {
+    const files = fs.readdirSync(postsDir);
+    for (const file of files) {
+      if (file.endsWith('.md') && file !== 'info.md') {
+        const md = fs.readFileSync(path.join(postsDir, file), 'utf8');
+        const fm = parseFrontmatter(md);
+        if (fm.date) {
+          const d = new Date(fm.date).getTime();
+          if (d > latestDate) latestDate = d;
+        }
+      }
+    }
+  }
+
+  return { name: col, ...info, latestDate };
+}).sort((a, b) => b.latestDate - a.latestDate);
 ---
 
 <Layout>
@@ -16,29 +77,17 @@ import { SiteTitle } from "../consts";
     <div class="apps">
       <h2>Our Products</h2>
       <div class="apps-grid">
-        <div class="app-card">
-          <h3>🌱 GardenX</h3>
-          <p>
-            A marketplace where schools sell organic, campus-grown veggies to
-            the community.
-          </p>
-          <a href="/gardenx" class="btn btn-primary">View Changelog</a>
-        </div>
-        <div class="app-card">
-          <h3>🎓 Falak Academy</h3>
-          <p>
-            Comprehensive learning platform for students and educators
-            worldwide.
-          </p>
-          <a href="/falakacademy" class="btn btn-primary">View Changelog</a>
-        </div>
-        <div class="app-card">
-          <h3>🤖 ClarityAI</h3>
-		  <p>
-			Empowering schools with insights and tools to support student mental health.
-		  </p>
-          <a href="/clarityai" class="btn btn-primary">View Changelog</a>
-        </div>
+        {
+          collectionInfos.map((col) => (
+            <div class="app-card">
+              <h3>{col.title}</h3>
+              <p>
+                {col.description || `View the changelog for ${col.title}.`}
+              </p>
+              <a href={`/${col.name}`} class="btn btn-primary">View Changelog</a>
+            </div>
+          ))
+        }
       </div>
     </div>
   </main>
@@ -214,3 +263,4 @@ import { SiteTitle } from "../consts";
     }
   }
 </style>
+

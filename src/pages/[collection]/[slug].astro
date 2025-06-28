@@ -1,0 +1,34 @@
+---
+import Layout from '../../layouts/PostLayout.astro';
+import { getCollection, render, type DataEntryMap } from 'astro:content';
+
+
+
+export async function getStaticPaths() {
+	const fs = await import('fs/promises');
+	const path = await import('path');
+	const contentDir = path.resolve('./src/content');
+	const folders = (await fs.readdir(contentDir, { withFileTypes: true }))
+		.filter((dirent) => dirent.isDirectory() && !dirent.name.startsWith('_'))
+		.map((dirent) => dirent.name);
+
+	const paths = [];
+	for (const collection of folders) {
+		const posts = await getCollection(collection as keyof DataEntryMap);
+		for (const post of posts) {
+			paths.push({
+				params: { collection, slug: post.id },
+				props: { collection, post },
+			});
+		}
+	}
+	return paths;
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Layout release={post}>
+	<Content />
+</Layout>
