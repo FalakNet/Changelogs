@@ -1,16 +1,12 @@
 import { glob } from 'astro/loaders';
 import { defineCollection, z } from 'astro:content';
 
-const releaseSchema = ({ image }) =>
+const releaseSchema = () =>
 	z.object({
 		title: z.string(),
 		description: z.string(),
 		versionNumber: z.string(),
-		image: z.object({
-			src: image(),
-			alt: z.string(),
-		}),
-		// Transform string to Date object
+		// Remove image field
 		date: z.date({ coerce: true }),
 	});
 

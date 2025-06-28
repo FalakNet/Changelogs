@@ -6,7 +6,11 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
 type Props = {
-	release: CollectionEntry<'releases'>;
+	release: 
+		CollectionEntry<'releases'> |
+		CollectionEntry<'gardenx'> |
+		CollectionEntry<'falakacademy'> |
+		CollectionEntry<'clarityai'>;
 };
 
 const { release } = Astro.props;
@@ -18,7 +22,6 @@ const { release } = Astro.props;
 		<BaseHead
 			title={release.data.title}
 			description={release.data.description}
-			image={release.data.image}
 		/>
 	</head><body>
 		<div class="glow"></div>
