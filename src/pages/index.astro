@@ -1,36 +1,216 @@
 ---
-import { getCollection, render } from 'astro:content';
-import FormattedDate from '../components/FormattedDate.astro';
-import Layout from '../layouts/IndexLayout.astro';
-
-const posts = await getCollection('releases');
-posts.sort((a, b) => +b.data.date - +a.data.date);
+import Layout from "../layouts/IndexLayout.astro";
+import { SiteTitle } from "../consts";
 ---
 
 <Layout>
-	<main>
-		<h1 class="page_title">Changelog</h1>
-		<hr />
-		<ul class="posts" transition:name="post">
-			{
-				posts.map((post) => (
-					<li class="post">
-						<div class="version_wrapper">
-							<div class="version_info">
-								<a href={`/releases/${post.id}`}>
-									<div class="version_number">{post.data.versionNumber}</div>
-									<FormattedDate class="date" date={post.data.date} />
-								</a>
-							</div>
-						</div>
-						<div class="content">
-							{render(post).then(({ Content }) => (
-								<Content />
-							))}
-						</div>
-					</li>
-				))
-			}
-		</ul>
-	</main>
+  <main>
+    <div class="hero">
+      <h1 class="hero-title">Welcome to {SiteTitle}</h1>
+      <p class="hero-description">
+        Stay up to date with the latest releases, features, and improvements
+        across all our products.
+      </p>
+    </div>
+
+    <div class="apps">
+      <h2>Our Products</h2>
+      <div class="apps-grid">
+        <div class="app-card">
+          <h3>🌱 GardenX</h3>
+          <p>
+            A marketplace where schools sell organic, campus-grown veggies to
+            the community.
+          </p>
+          <a href="/gardenx" class="btn btn-primary">View Changelog</a>
+        </div>
+        <div class="app-card">
+          <h3>🎓 Falak Academy</h3>
+          <p>
+            Comprehensive learning platform for students and educators
+            worldwide.
+          </p>
+          <a href="/falakacademy" class="btn btn-primary">View Changelog</a>
+        </div>
+        <div class="app-card">
+          <h3>🤖 ClarityAI</h3>
+		  <p>
+			Empowering schools with insights and tools to support student mental health.
+		  </p>
+          <a href="/clarityai" class="btn btn-primary">View Changelog</a>
+        </div>
+      </div>
+    </div>
+  </main>
 </Layout>
+
+<style>
+  .hero {
+    text-align: center;
+    padding: 4rem 0 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .hero-title {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(25deg, #9818e7, #df7f4f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-description {
+    font-size: 1.25rem;
+    opacity: 0.8;
+  }
+
+  .apps {
+    padding: 3rem 0;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .apps h2 {
+    text-align: center;
+    margin-bottom: 3rem;
+    font-size: 2.5rem;
+  }
+
+  .apps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+  }
+
+  .app-card {
+    padding: 2.5rem;
+    border-radius: 16px;
+    border: 1px solid #e6e7ef;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .app-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  }
+
+  .app-card h3 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+  }
+
+  .app-card p {
+    opacity: 0.8;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-block;
+  }
+
+  .btn-primary {
+    background: linear-gradient(25deg, #9818e7, #df7f4f);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(152, 24, 231, 0.3);
+  }
+
+  .btn-secondary {
+    border: 2px solid #9818e7;
+    color: #9818e7;
+  }
+
+  .btn-secondary:hover {
+    background: #9818e7;
+    color: white;
+  }
+
+  .features {
+    padding: 4rem 0;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .features h2 {
+    text-align: center;
+    margin-bottom: 3rem;
+    font-size: 2.5rem;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .feature {
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid #e6e7ef;
+    transition: all 0.2s ease;
+  }
+
+  .feature:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .feature h3 {
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+  }
+
+  .feature p {
+    opacity: 0.8;
+    line-height: 1.6;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .app-card {
+      border-color: #404664;
+    }
+
+    .btn-secondary {
+      border-color: #df7f4f;
+      color: #df7f4f;
+    }
+
+    .btn-secondary:hover {
+      background: #df7f4f;
+      color: white;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2.5rem;
+    }
+
+    .apps-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-actions {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .btn {
+      width: 200px;
+    }
+  }
+</style>
